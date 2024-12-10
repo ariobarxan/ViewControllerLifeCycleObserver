@@ -1,10 +1,3 @@
-//
-//  ViewControllerLifeCycleObservers.h
-//  ViewControllerLifeCycleObservers
-//
-//  Created by Ario Zarepour on 9/12/2024.
-//
-
 #import <Foundation/Foundation.h>
 
 //! Project version number for ViewControllerLifeCycleObservers.
