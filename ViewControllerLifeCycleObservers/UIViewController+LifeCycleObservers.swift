@@ -42,6 +42,34 @@ public extension UIViewController {
         return observer
     }
 
+    /// Adds a lifecycle observer to the view controller that executes a callback
+    /// whenever `loadView()` is called on the view controller.
+    ///
+    /// Use this method to run custom code when the view controller's view is being set.
+    /// The observer triggers the provided callback during the
+    /// `loadView()` lifecycle event and can be removed if needed.
+    /// - Parameter callback: A closure to execute when `loadView()` is called.
+    /// - Returns: A ```UIViewControllerLifecycleObserver``` object that manages the observer.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// override func loadView() {
+    ///     super.loadView()
+    ///
+    ///     // Attach an observer to run code during `loadView()`
+    ///     let observer = onLoadView {
+    ///         print("View is being set!")
+    ///     }
+    ///
+    ///     // Optionally store the observer to remove it later
+    ///     self.lifecycleObserver = observer
+    /// }
+    ///
+    /// var lifecycleObserver: UIViewControllerLifecycleObserver?
+    /// ```
+    /// Call `remove()` on this object to detach the observer when no longer needed.
+    ///
+    ///  > Important: The callback is executed  when `loadView()` is called. To prevent memory leaks, ensure you remove the observer when it's no longer needed, such as in `deinit` or `viewWillDisappear(_:)`.
     @discardableResult
     func onLoadView(run callback: @escaping voidAction) -> UIViewControllerLifecycleObserver {
         let observer = ViewControllerLifeCycleObserver(loadViewCallBack: callback)
