@@ -78,6 +78,14 @@ public extension UIViewController {
         return observer
     }
 
+    @discardableResult
+    func onViewDidLoad(run callback: @escaping voidAction) -> UIViewControllerLifecycleObserver {
+        let observer = ViewControllerLifeCycleObserver(viewDidLoadCallBack: callback)
+        add(observer)
+
+        return observer
+    }
+
     private func add(_ observer: UIViewController) {
         addChild(observer)
         observer.view.isHidden = true
@@ -91,19 +99,27 @@ public extension UIViewController {
 private class ViewControllerLifeCycleObserver: UIViewController {
     private var viewWillApearCallBack: voidAction? = nil
     private var loadViewCallBack: voidAction? = nil
-    
+    private var viewDidLoadCallBack: voidAction? = nil
+
     convenience init(
         viewWillApearCallBack: voidAction? = nil,
-        loadViewCallBack: voidAction? = nil
+        loadViewCallBack: voidAction? = nil,
+        viewDidLoadCallBack: voidAction? = nil
     ) {
         self.init()
         self.viewWillApearCallBack = viewWillApearCallBack
         self.loadViewCallBack = loadViewCallBack
+        self.viewDidLoadCallBack = viewDidLoadCallBack
     }
 
     override func loadView() {
         super.loadView()
         loadViewCallBack?()
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        viewDidLoadCallBack?()
     }
 
     override func viewWillAppear(_ animated: Bool) {
