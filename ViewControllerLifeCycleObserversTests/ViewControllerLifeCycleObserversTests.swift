@@ -60,21 +60,9 @@ final class ViewControllerLifeCycleObserversTests: XCTestCase {
     }
 
     func test_loadViewObserverCallBackGetsFired() {
-        let sut = UIViewController()
-
-        var callCount = 0
-        sut.onLoadView {
-            callCount += 1
-        }
-
-        let observer = sut.children.first
-        XCTAssertEqual(callCount, 1)
-
-        observer?.loadView()
-        XCTAssertEqual(callCount, 2)
-
-        observer?.loadView()
-        XCTAssertEqual(callCount, 3)
+        assertObserverCallbackDuringInitialization(
+            firesCallback: { $0.onLoadView(run:) },
+            when: { $0.loadView()})
     }
 
     func test_loadViewObserverIsRemovable() {
@@ -148,4 +136,27 @@ final class ViewControllerLifeCycleObserversTests: XCTestCase {
             action(observer)
             XCTAssertEqual(callCount, 2, file: file, line: line)
         }
+
+    func assertObserverCallbackDuringInitialization(
+        firesCallback callback: (UIViewController) -> ((@escaping () -> Void) -> UIViewControllerLifecycleObserver),
+        when action: @escaping (UIViewController) -> Void,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        let sut = UIViewController()
+
+        var callCount = 0
+        sut.onLoadView {
+            callCount += 1
+        }
+
+        let observer = sut.children.first
+        XCTAssertEqual(callCount, 1)
+
+        observer?.loadView()
+        XCTAssertEqual(callCount, 2)
+
+        observer?.loadView()
+        XCTAssertEqual(callCount, 3)
+    }
 }
