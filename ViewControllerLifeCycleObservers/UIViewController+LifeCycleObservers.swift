@@ -1,5 +1,7 @@
 import UIKit
 
+public typealias voidAction = () -> Void
+
 public protocol UIViewControllerLifecycleObserver {
     func remove()
 }
@@ -34,7 +36,7 @@ public extension UIViewController {
     ///
     ///  > Important: The callback is executed every time `viewWillAppear(_:)` is called. To prevent memory leaks, ensure you remove the observer when it's no longer needed, such as in `deinit` or `viewWillDisappear(_:)`.)
     @discardableResult
-    func onViewWillAppear(run callback: @escaping () -> Void) -> UIViewControllerLifecycleObserver {
+    func onViewWillAppear(run callback: @escaping voidAction) -> UIViewControllerLifecycleObserver {
         let observer = ViewControllerLifeCycleObserver(viewWillApearCallBack: callback)
         add(observer)
         return observer
@@ -51,16 +53,20 @@ public extension UIViewController {
 
 
 private class ViewControllerLifeCycleObserver: UIViewController {
-    private var viewWillApearCallBack: () -> Void = {}
+    private var viewWillApearCallBack: voidAction? = nil
 
-    convenience init(viewWillApearCallBack: @escaping () -> Void) {
+   
+
+    convenience init(
+        viewWillApearCallBack: voidAction? = nil
+    ) {
         self.init()
         self.viewWillApearCallBack = viewWillApearCallBack
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(false)
-        viewWillApearCallBack()
+        viewWillApearCallBack?()
     }
 }
 
@@ -73,3 +79,4 @@ extension ViewControllerLifeCycleObserver: UIViewControllerLifecycleObserver {
     }
 }
 
+public typealias voidAction = () -> Void
