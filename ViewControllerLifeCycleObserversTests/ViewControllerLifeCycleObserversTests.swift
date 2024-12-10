@@ -5,90 +5,58 @@ final class ViewControllerLifeCycleObserversTests: XCTestCase {
 
     // MARK: - viewWillAppear Event
     func test_viewWillAppearObserverIsAddedAsChild() {
-        let sut = UIViewController()
-
-        sut.onViewWillAppear {}
-
-        XCTAssertEqual(sut.children.count, 1 )
+        assertObserverIsAddedAsChild{ sut in
+            sut.onViewWillAppear {}
+        }
     }
 
     func test_viewWillAppearObserverViewIsAddedAsSubview() {
-        let sut = UIViewController()
-
-        sut.onViewWillAppear {}
-
-        let observer = sut.children.first
-        XCTAssertEqual(observer?.view.superview, sut.view)
+        assertObserverViewIsAddedAsSubView { sut in
+            sut.onViewWillAppear {}
+        }
     }
 
-
     func test_viewWillAppearObserverViewIsInvisible() {
-        let sut = UIViewController()
-
-        sut.onViewWillAppear {}
-
-        let observer = sut.children.first
-        XCTAssertEqual(observer?.view.isHidden, true)
+        assertObserverViewViewIsInvisible{ sut in
+            sut.onViewWillAppear {}
+        }
     }
 
     func test_viewWillAppearObserverViewControllerFiresCallback() {
-        let sut = UIViewController()
-
-        var callCount = 0
-        sut.onViewWillAppear {
-            callCount += 1
-        }
-        
-        let observer = sut.children.first
-        XCTAssertEqual(callCount, 0)
-
-        observer?.viewWillAppear(false)
-        XCTAssertEqual(callCount, 1)
-
-        observer?.viewWillAppear(false)
-        XCTAssertEqual(callCount, 2)
+        assertObserver(
+            firesCallback: { $0.onViewWillAppear(run:) },
+            when: { $0.viewWillAppear(false)})
     }
 
     func test_viewWillAppearObserverIsRemovable() {
-        let sut = UIViewController()
-
-        sut.onViewWillAppear (run: {}).remove()
-
-        XCTAssertEqual(sut.children.count, 0)
+        assertObserverIsRemovable{ sut in
+            sut.onViewWillAppear {}
+        }
     }
 
     func test_viewWillAppearObserverViewIsRemovable() {
-        let sut = UIViewController()
-
-        sut.onViewWillAppear (run: {}).remove()
-
-        XCTAssertEqual(sut.view.subviews.count, 0)
+        assertObserverIsRemovable{ sut in
+            sut.onViewWillAppear (run: {})
+        }
     }
 
     // MARK: - loadView Event
     func test_loadViewObserverIsAddedAsChild() {
-        let sut = UIViewController()
-
-        sut.onLoadView(run: {})
-
-        XCTAssertEqual(sut.children.count, 1)
+        assertObserverIsAddedAsChild{ sut in
+            sut.onLoadView{}
+        }
     }
 
     func test_loadViewObserverViewIsAddedAsSubview() {
-        let sut = UIViewController()
-
-        sut.onLoadView {}
-        let observer = sut.children.first
-        XCTAssertEqual(observer?.view.superview, sut.view)
+        assertObserverViewIsAddedAsSubView { sut in
+            sut.onLoadView {}
+        }
     }
 
     func test_loadViewObserverViewIsInvisible() {
-        let sut = UIViewController()
-
-        sut.onLoadView {}
-        let observer = sut.children.first
-
-        XCTAssertEqual(observer?.view.isHidden, true)
+        assertObserverViewViewIsInvisible{ sut in
+            sut.onLoadView {}
+        }
     }
 
     func test_loadViewObserverCallBackGetsFired() {
@@ -110,18 +78,74 @@ final class ViewControllerLifeCycleObserversTests: XCTestCase {
     }
 
     func test_loadViewObserverIsRemovable() {
-        let sut = UIViewController()
-
-        sut.onViewWillAppear (run: {}).remove()
-
-        XCTAssertEqual(sut.children.count, 0)
+        assertObserverIsRemovable{ sut in
+            sut.onLoadView {}
+        }
     }
 
     func test_loadViewObserverViewIsRemovable() {
-        let sut = UIViewController()
+        assertObserverIsRemovable{ sut in
+            sut.onLoadView {}
+        }
+    }
 
-        sut.onViewWillAppear (run: {}).remove()
+    // MARK: - Helpers
+
+    func assertObserverIsAddedAsChild(on action: @escaping (UIViewController) -> Void, file: StaticString = #file, line: UInt = #line) {
+        let sut = UIViewController()
+        action(sut)
+
+        XCTAssertEqual(sut.children.count, 1, file: file, line: line)
+    }
+
+    func assertObserverViewIsAddedAsSubView(on action: @escaping (UIViewController) -> Void, file: StaticString = #file, line: UInt = #line) {
+        let sut = UIViewController()
+        action(sut)
+        let observer = sut.children.first
+
+        XCTAssertEqual(observer?.view.superview, sut.view, file: file, line: line)
+    }
+
+    func assertObserverViewViewIsInvisible(on action: @escaping (UIViewController) -> Void, file: StaticString = #file, line: UInt = #line) {
+        let sut = UIViewController()
+        action(sut)
+        let observer = sut.children.first
+
+        XCTAssertEqual(observer?.view.isHidden, true, file: file, line: line)
+    }
+
+    func assertObserverIsRemovable(on action: @escaping (UIViewController) -> UIViewControllerLifecycleObserver, file: StaticString = #file, line: UInt = #line) {
+        let sut = UIViewController()
+        action(sut).remove()
+
+        XCTAssertEqual(sut.children.count, 0, file: file, line: line)
+    }
+
+    func assertObserverViewIsRemovable(on action: @escaping (UIViewController) -> UIViewControllerLifecycleObserver, file: StaticString = #file, line: UInt = #line) {
+        let sut = UIViewController()
+        action(sut).remove()
 
         XCTAssertEqual(sut.view.subviews.count, 0)
     }
+
+    func assertObserver(
+        firesCallback callback: (UIViewController) -> ((@escaping () -> Void) -> UIViewControllerLifecycleObserver),
+        when action: @escaping (UIViewController) -> Void,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+            let sut = UIViewController()
+
+            var callCount = 0
+            _ = callback(sut)({ callCount += 1 })
+
+            let observer = sut.children.first!
+            XCTAssertEqual(callCount, 0, file: file, line: line)
+
+            action(observer)
+            XCTAssertEqual(callCount, 1, file: file, line: line)
+
+            action(observer)
+            XCTAssertEqual(callCount, 2, file: file, line: line)
+        }
 }
